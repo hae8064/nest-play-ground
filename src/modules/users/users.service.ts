@@ -17,6 +17,14 @@ export class UsersService {
     return users;
   }
 
+  async getUserById(id: number) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   async createUser(body: CreateUserDto) {
     // password 암호화
     const hashedPassword = await bcrypt.hash(body.password, 10);
