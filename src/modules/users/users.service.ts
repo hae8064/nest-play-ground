@@ -1,15 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './users.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/createUser.dto';
 import * as bcrypt from 'bcrypt';
+import { LoginReqDto } from './dto/loginReq.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private jwtService: JwtService,
   ) {}
 
   async getUsers() {
@@ -33,6 +40,38 @@ export class UsersService {
       password: hashedPassword,
     });
     return this.userRepository.save(user);
+  }
+
+  async login(body: LoginReqDto) {
+    const user = await this.userRepository.findOne({
+      where: { email: body.email },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (await bcrypt.compare(body.password, user.password)) {
+      // user를 반환하는게 아니라 토큰을 반환해야 함
+      const payload = { id: user.id, email: user.email };
+
+      // Access Token 생성
+      const accessToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '1h',
+      });
+
+      // Refresh Token 생성
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: '2w',
+      });
+
+      return {
+        accessToken,
+        refreshToken,
+      };
+    }
+    throw new UnauthorizedException('Invalid password');
   }
 
   async deleteUser(id: number) {
