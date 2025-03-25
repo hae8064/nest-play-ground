@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -10,6 +11,7 @@ import { CreateUserDto } from './dto/createUser.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginReqDto } from './dto/loginReq.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UpdateUserDto } from './dto/UpdateUser.dto';
 
 @Injectable()
 export class UsersService {
@@ -81,5 +83,32 @@ export class UsersService {
     }
     await this.userRepository.remove(user);
     return { success: true, message: `${user.email} deleted successfully` };
+  }
+
+  async updateUser(id: number, body: UpdateUserDto) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (body.password) {
+      if (body.password !== body.confirmPassword) {
+        throw new BadRequestException(
+          'Password and confirmPassword do not match',
+        );
+      }
+      const hashedPassword = await bcrypt.hash(body.password, 10);
+      user.password = hashedPassword;
+    }
+
+    if (body.name) {
+      user.name = body.name;
+    }
+
+    await this.userRepository.save(user);
+    return {
+      success: true,
+      message: 'User updated successfully',
+    };
   }
 }
