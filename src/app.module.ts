@@ -2,11 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersController, UsersService } from './modules/users';
+import { UsersModule } from './modules/users';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmConfigService } from './configs/typeorm.config';
-import { User } from './modules/users/users.entity';
-import { JwtModule } from '@nestjs/jwt';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -17,17 +16,9 @@ import { JwtModule } from '@nestjs/jwt';
       imports: [ConfigModule],
       useClass: TypeOrmConfigService,
     }),
-    TypeOrmModule.forFeature([User]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1h' },
-    }),
-    JwtModule.register({
-      secret: process.env.JWT_REFRESH_SECRET,
-      signOptions: { expiresIn: '2w' },
-    }),
+    UsersModule,
   ],
-  controllers: [AppController, UsersController],
-  providers: [AppService, UsersService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
