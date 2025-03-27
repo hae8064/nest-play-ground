@@ -111,4 +111,21 @@ export class UsersService {
       message: 'User updated successfully',
     };
   }
+
+  async findOrCreateOAuthUser(profile: any) {
+    const { email } = profile;
+    let user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      user = this.userRepository.create({
+        email,
+        name: profile.firstName + ' ' + profile.lastName,
+        // TODO: 추후 프로필 사진까지 필요하다면 추가
+        // picture: ""
+      });
+      await this.userRepository.save(user);
+    }
+
+    return user;
+  }
 }
