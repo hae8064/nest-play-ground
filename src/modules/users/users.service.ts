@@ -117,14 +117,19 @@ export class UsersService {
     let user = await this.userRepository.findOne({ where: { email } });
 
     if (!user) {
+      // oAuth 로그인 시 임시 비밀번호 설정
+      const tempPassword = await bcrypt.hash('tempPassword', 10);
       user = this.userRepository.create({
         email,
         name: profile.firstName + ' ' + profile.lastName,
+        password: tempPassword, // 임시 비밀번호 설정
         // TODO: 추후 프로필 사진까지 필요하다면 추가
         // picture: ""
       });
       await this.userRepository.save(user);
     }
+
+    console.log('user', user);
 
     return user;
   }
