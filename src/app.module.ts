@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersController, UsersService } from './modules/users';
+import { UsersModule } from './modules/users';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmConfigService } from './configs/typeorm.config';
-import { User } from './modules/users/users.entity';
+import { AuthModule } from './modules/auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -16,9 +16,10 @@ import { User } from './modules/users/users.entity';
       imports: [ConfigModule],
       useClass: TypeOrmConfigService,
     }),
-    TypeOrmModule.forFeature([User]),
+    UsersModule,
+    AuthModule,
   ],
-  controllers: [AppController, UsersController],
-  providers: [AppService, UsersService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
