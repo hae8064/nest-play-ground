@@ -20,6 +20,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
       email: emails[0].value,
       name: name.givenName + ' ' + name.familyName,
     };
-    done(null, user);
+    await done(null, user);
   }
 }
