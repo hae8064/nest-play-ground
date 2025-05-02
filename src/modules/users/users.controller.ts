@@ -30,11 +30,13 @@ export class UsersController {
     return this.usersService.login(body);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   getUsers() {
     return this.usersService.getUsers();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   getUser(@Param('id') id: number) {
     return this.usersService.getUserById(id);
