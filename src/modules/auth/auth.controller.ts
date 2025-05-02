@@ -1,6 +1,7 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Post, Body } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from '../users/guards/jwtAuth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -17,5 +18,12 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(@Req() req) {
     return this.authService.googleLogin(req);
+  }
+
+  // accessToken 재발급
+  @Post('refresh')
+  @UseGuards(JwtAuthGuard)
+  async refresh(@Body('refreshToken') refreshToken: string) {
+    return this.authService.refreshAccessToken(refreshToken);
   }
 }
